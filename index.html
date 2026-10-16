@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>المختبر الافتراضي - قانون التوزع | Distribution Law Virtual Lab</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Cairo, Tajawal & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Cairo', 'Tajawal', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            lab: {
+              bg: '#0b1120',
+              card: '#111827',
+              panel: '#1e293b',
+              accent: '#38bdf8',
+              pink: '#f472b6',
+              organic: '#f59e0b',
+              aqueous: '#0ea5e9',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Cairo', 'Tajawal', sans-serif;
+      overflow-x: hidden;
+    }
+    .ltr-math {
+      direction: ltr;
+      unicode-bidi: embed;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    @keyframes shakeFlask {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      15% { transform: translate(-10px, -6px) rotate(-8deg); }
+      30% { transform: translate(10px, 4px) rotate(8deg); }
+      45% { transform: translate(-10px, 6px) rotate(-6deg); }
+      60% { transform: translate(8px, -6px) rotate(6deg); }
+      75% { transform: translate(-6px, 4px) rotate(-4deg); }
+    }
+    .animate-shake-flask {
+      animation: shakeFlask 0.45s infinite ease-in-out;
+    }
+    @keyframes dropFall {
+      0% { transform: translateY(0) scale(0.8); opacity: 1; }
+      85% { transform: translateY(85px) scale(1.1); opacity: 1; }
+      100% { transform: translateY(95px) scale(0.3); opacity: 0; }
+    }
+    .animate-drop {
+      animation: dropFall 0.4s cubic-bezier(0.4, 0, 1, 1) forwards;
+    }
+    .liquid-transition {
+      transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.6);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(56, 189, 248, 0.4);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(56, 189, 248, 0.7);
+    }
+    @media print {
+      .no-print { display: none !important; }
+      body { background: white !important; color: black !important; }
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 dark:bg-[#080d1a] dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-300">
+
+  <!-- Top Navigation Header -->
+  <header class="sticky top-0 z-40 backdrop-blur-md bg-white/85 dark:bg-slate-900/90 border-b border-slate-200 dark:border-slate-800 shadow-sm no-print">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+      <!-- Brand / Title -->
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-sky-500 via-blue-600 to-indigo-700 flex items-center justify-center text-white shadow-lg shadow-sky-500/25">
+          <i class="fa-solid fa-flask-vial text-xl"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-sky-500/15 text-sky-600 dark:text-sky-400 border border-sky-500/30" id="headerBadge">
+              التجربة العملية الثالثة
+            </span>
+            <span class="text-xs text-slate-500 dark:text-slate-400 font-mono">CH3COOH / H2O / Butanol</span>
+          </div>
+          <h1 class="text-lg sm:text-xl font-extrabold tracking-tight text-slate-900 dark:text-white" id="headerTitle">
+            قانون التوزع — تحديد معامل توزع حمض الخل بين سائلين غير متمازجين
+          </h1>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs & Quick Utilities -->
+      <div class="flex items-center gap-2 flex-wrap">
+        <nav class="flex bg-slate-100 dark:bg-slate-800/90 p-1 rounded-xl border border-slate-200 dark:border-slate-700/70">
+          <button onclick="switchMainTab('theory')" id="tabBtn-theory" class="tab-btn px-3.5 py-1.5 rounded-lg text-sm font-bold transition-all flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
+            <i class="fa-solid fa-book-open text-sky-500"></i>
+            <span data-i18n="navTheory">الشرح النظري</span>
+          </button>
+          <button onclick="switchMainTab('lab')" id="tabBtn-lab" class="tab-btn px-3.5 py-1.5 rounded-lg text-sm font-bold transition-all flex items-center gap-1.5 bg-sky-500 text-white shadow-md">
+            <i class="fa-solid fa-vials"></i>
+            <span data-i18n="navLab">المختبر الافتراضي</span>
+          </button>
+          <button onclick="switchMainTab('table')" id="tabBtn-table" class="tab-btn px-3.5 py-1.5 rounded-lg text-sm font-bold transition-all flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
+            <i class="fa-solid fa-table-list text-emerald-500"></i>
+            <span data-i18n="navTable">الجدول والحسابات</span>
+          </button>
+          <button onclick="switchMainTab('quiz')" id="tabBtn-quiz" class="tab-btn px-3.5 py-1.5 rounded-lg text-sm font-bold transition-all flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
+            <i class="fa-solid fa-circle-question text-amber-500"></i>
+            <span data-i18n="navQuiz">اختبر فهمك</span>
+          </button>
+        </nav>
+
+        <!-- Sound Toggle -->
+        <button onclick="toggleSound()" id="soundToggleBtn" title="تفعيل/كتم المؤثرات الصوتية" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 transition">
+          <i class="fa-solid fa-volume-high text-sky-500" id="soundIcon"></i>
+        </button>
+
+        <!-- Language Toggle -->
+        <button onclick="toggleLanguage()" class="px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-bold border border-slate-200 dark:border-slate-700 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-language text-indigo-500 text-sm"></i>
+          <span id="langToggleText">English / عربي</span>
+        </button>
+
+        <!-- Theme Toggle -->
+        <button onclick="toggleTheme()" title="تبديل المظهر" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 transition">
+          <i class="fa-solid fa-sun text-amber-400 hidden dark:inline"></i>
+          <i class="fa-solid fa-moon text-slate-700 inline dark:hidden"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6">
+
+    <!-- ==========================================
+         SECTION 1: THEORY & EXPLANATION (الشرح النظري)
+         ========================================== -->
+    <section id="section-theory" class="hidden space-y-6">
+      <div class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-6 sm:p-8 border border-indigo-500/30 shadow-xl">
+        <div class="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+          <div class="lg:col-span-7 space-y-4">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-500/20 border border-sky-400/30 text-sky-300 text-xs font-semibold">
+              <i class="fa-solid fa-atom"></i>
+              <span>أطوار المادة والمحاليل — القسم العملي</span>
+            </div>
+            <h2 class="text-2xl sm:text-3xl font-extrabold leading-snug">
+              قانون التوزع (Distribution Law) وتحديد معامل التوزع <span class="ltr-math text-sky-400">K<sub>d</sub></span>
+            </h2>
+            <p class="text-slate-300 leading-relaxed text-sm sm:text-base">
+              إذا أُخذ سائلان لا ينحلان في بعضهما بعضاً (غير متمازجين)، كالماء والبوتانول، وأُضيفت لهما مادة ثالثة كحمض الخل (<span class="ltr-math">CH₃COOH</span>)، فإن هذه المادة تتوزع بين هذين السائلين عند حلول التوازن بنسبة محددة عند درجة حرارة ثابتة، وتدعى هذه الظاهرة باسم <strong>قانون التوزع لـ نيرنست</strong>.
+            </p>
+            <div class="flex flex-wrap gap-3 pt-2">
+              <button onclick="switchMainTab('lab')" class="px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-white font-bold text-sm shadow-lg shadow-sky-500/30 transition flex items-center gap-2">
+                <i class="fa-solid fa-play"></i>
+                <span>ابدأ تنفيذ التجربة عملياً الآن</span>
+              </button>
+              <button onclick="switchMainTab('table')" class="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-sm border border-white/15 transition flex items-center gap-2">
+                <i class="fa-solid fa-calculator"></i>
+                <span>جدول المعايرات والحسابات</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Interactive Molecular Partition Visualizer -->
+          <div class="lg:col-span-5 bg-slate-950/80 rounded-2xl p-4 border border-slate-700/80 shadow-inner">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-bold text-sky-400 flex items-center gap-1.5">
+                <i class="fa-solid fa-microscope"></i>
+                محاكاة جزيئية لتوزع حمض الخل عند التوازن
+              </span>
+              <button onclick="resetMolecularSim()" class="text-xs px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600 transition">
+                <i class="fa-solid fa-rotate"></i> إعادة التوزع
+              </button>
+            </div>
+            <div class="relative w-full h-52 rounded-xl overflow-hidden border border-slate-700" id="molecularBox">
+              <div class="h-1/2 w-full bg-gradient-to-b from-amber-500/25 to-amber-600/35 flex flex-col justify-between p-2.5 border-b-2 border-dashed border-amber-300/60">
+                <div class="flex justify-between items-center text-[11px] font-bold text-amber-300">
+                  <span>الطبقة العضوية العليا (البوتانول - Butanol)</span>
+                  <span class="ltr-math bg-amber-950/80 px-2 py-0.5 rounded border border-amber-500/40">N_O</span>
+                </div>
+                <div class="text-[10px] text-amber-200/75">أقل كثافة (0.81 g/mL) — تطفو للأعلى</div>
+              </div>
+              <div class="h-1/2 w-full bg-gradient-to-b from-sky-500/25 to-blue-600/35 flex flex-col justify-between p-2.5">
+                <div class="text-[10px] text-sky-200/75">الحد الفاصل بين الطورين (Interface)</div>
+                <div class="flex justify-between items-center text-[11px] font-bold text-sky-300">
+                  <span>الطبقة المائية السفلى (الماء - Water)</span>
+                  <span class="ltr-math bg-sky-950/80 px-2 py-0.5 rounded border border-sky-500/40">N_W</span>
+                </div>
+              </div>
+              <canvas id="moleculesCanvas" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
+            </div>
+            <p class="text-[11px] text-slate-400 mt-2 text-center">
+              تتحرك جزيئات <span class="ltr-math text-pink-400 font-bold">CH₃COOH</span> عبر السطح الفاصل حتى تثبت نسبة التراكيز <span class="ltr-math text-emerald-400">K_d = N_O / N_W</span>.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mathematical Laws Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <span class="px-2.5 py-1 rounded-lg bg-sky-500/10 text-sky-600 dark:text-sky-400 text-xs font-bold">العلاقة الأساسية (1)</span>
+              <i class="fa-solid fa-scale-balanced text-sky-500 text-lg"></i>
+            </div>
+            <h3 class="font-bold text-base mb-2">الصيغة الرياضية لقانون التوزع</h3>
+            <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mb-4">
+              يعبر عن ثابت التوزع (أو معامل التوزع <span class="ltr-math">K_d</span>) عند درجة حرارة ثابتة بنسبة تركيز المادة المذابة في الطبقة العضوية إلى تركيزها في الطبقة المائية:
+            </p>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-100 dark:bg-slate-800/80 text-center ltr-math font-bold text-sky-600 dark:text-sky-400 text-base border border-slate-200 dark:border-slate-700">
+            K<sub>d</sub> = C<sub>O</sub> / C<sub>W</sub> = N<sub>O</sub> / N<sub>W</sub>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <span class="px-2.5 py-1 rounded-lg bg-pink-500/10 text-pink-600 dark:text-pink-400 text-xs font-bold">قانون المعايرة (2)</span>
+              <i class="fa-solid fa-eye-dropper text-pink-500 text-lg"></i>
+            </div>
+            <h3 class="font-bold text-base mb-2">تحديد التراكيز بالمعايرة الحجمية</h3>
+            <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mb-4">
+              نعاير حجماً معلوماً (<span class="ltr-math">V = 5 mL</span>) من كل طبقة بواسطة محلول قياسي من هيدروكسيد الصوديوم (<span class="ltr-math">NaOH</span>) تركيزه النظامي معلوم بوجود مشعر الفينول فتالين:
+            </p>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-100 dark:bg-slate-800/80 text-center ltr-math font-bold text-pink-600 dark:text-pink-400 text-base border border-slate-200 dark:border-slate-700">
+            (N × V)<sub>Acid</sub> = (N × V)<sub>NaOH</sub>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <span class="px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-bold">شروط التطبيق (3)</span>
+              <i class="fa-solid fa-check-double text-emerald-500 text-lg"></i>
+            </div>
+            <h3 class="font-bold text-base mb-2">شروط ثبات معامل التوزع</h3>
+            <ul class="text-xs text-slate-600 dark:text-slate-400 space-y-1.5 list-disc list-inside">
+              <li>ثبات درجة الحرارة طوال التجربة.</li>
+              <li>المحاليل ممددة (تراكيز منخفضة).</li>
+              <li>عدم حدوث تفكك أو تكتل جزيئي للمذاب في أحد الطورين.</li>
+            </ul>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-100 dark:bg-slate-800/80 text-center ltr-math font-bold text-emerald-600 dark:text-emerald-400 text-sm border border-slate-200 dark:border-slate-700">
+            T = Constant , Dilute Solutions
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         SECTION 2: VIRTUAL LAB (المختبر الافتراضي)
+         ========================================== -->
+    <section id="section-lab" class="space-y-6">
+      <!-- Top Lab Progress & Mixture Selector -->
+      <div class="bg-white dark:bg-slate-900 rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-wrap items-center justify-between gap-4">
+        <div class="flex items-center gap-3 flex-wrap">
+          <span class="text-sm font-bold text-slate-700 dark:text-slate-300">
+            <i class="fa-solid fa-flask text-sky-500 ml-1"></i> اختر المزيج (الزجاجة):
+          </span>
+          <button onclick="selectFlask(1)" id="flaskBtn-1" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition bg-sky-500 text-white shadow">
+            المزيج (1): 10mL خل + 15mL ماء + 25mL بوتانول
+          </button>
+          <button onclick="selectFlask(2)" id="flaskBtn-2" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200">
+            المزيج (2): 15mL خل + 10mL ماء + 25mL بوتانول
+          </button>
+          <button onclick="selectFlask(3)" id="flaskBtn-3" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200">
+            المزيج (3): 20mL خل + 5mL ماء + 25mL بوتانول
+          </button>
+        </div>
+
+        <button onclick="resetCurrentFlask()" class="px-3.5 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 text-xs font-bold border border-rose-500/20 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-rotate-right"></i> إعادة ضبط هذا المزيج
+        </button>
+      </div>
+
+      <!-- Main Lab Bench Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Right Column: Step 1 & 2 (Separating Funnel & Sampling) -->
+        <div class="lg:col-span-5 bg-white dark:bg-slate-900 rounded-3xl p-5 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between space-y-5">
+          <div>
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
+              <h3 class="font-extrabold text-base flex items-center gap-2">
+                <span class="w-6 h-6 rounded-full bg-sky-500 text-white text-xs flex items-center justify-center">1</span>
+                <span>قمع الفصل (الرجّ وفصل الطورين)</span>
+              </h3>
+              <span id="funnelStatusBadge" class="text-xs px-2.5 py-1 rounded-full bg-amber-500/15 text-amber-500 font-bold">
+                بانتظار الرجّ
+              </span>
+            </div>
+
+            <!-- Visual Separating Funnel -->
+            <div class="relative h-72 bg-slate-100 dark:bg-slate-950/80 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col items-center justify-center p-4 overflow-hidden">
+              <div id="funnelContainer" class="relative w-36 h-56 flex flex-col items-center">
+                <!-- Stopper -->
+                <div class="w-10 h-4 bg-slate-400 dark:bg-slate-600 rounded-t-md mb-0.5"></div>
+                <!-- Funnel Body -->
+                <div class="w-32 h-40 rounded-t-2xl rounded-b-[45%] border-2 border-slate-400 dark:border-slate-500 overflow-hidden flex flex-col justify-end relative bg-white/10 backdrop-blur-sm shadow-inner">
+                  <!-- Upper Organic Layer (Butanol) -->
+                  <div id="organicLayerVis" class="w-full h-1/2 bg-amber-400/60 dark:bg-amber-500/50 border-b border-dashed border-white/50 flex items-center justify-center text-[11px] font-bold text-amber-950 dark:text-amber-100 liquid-transition">
+                    طبقة عضوية (بوتانول)
+                  </div>
+                  <!-- Lower Aqueous Layer (Water) -->
+                  <div id="aqueousLayerVis" class="w-full h-1/2 bg-sky-400/60 dark:bg-sky-500/50 flex items-center justify-center text-[11px] font-bold text-sky-950 dark:text-sky-100 liquid-transition">
+                    طبقة مائية (ماء)
+                  </div>
+                </div>
+                <!-- Stopcock / Stem -->
+                <div class="w-3 h-10 border-x-2 border-slate-400 dark:border-slate-500 bg-sky-400/30 relative flex items-center justify-center">
+                  <div class="w-8 h-2.5 bg-rose-500 rounded-full"></div>
+                </div>
+              </div>
+              <p id="funnelHint" class="text-xs text-slate-500 dark:text-slate-400 mt-2 text-center">
+                اضغط على "رجّ المزيج" لمدة كافية للوصول إلى التوازن الحراري والكيميائي.
+              </p>
+            </div>
+          </div>
+
+          <!-- Controls for Funnel & Sampling -->
+          <div class="space-y-3">
+            <button onclick="shakeFunnel()" id="btnShake" class="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-sm shadow-lg shadow-amber-500/20 transition flex items-center justify-center gap-2">
+              <i class="fa-solid fa-hand-sparkles"></i>
+              <span>رجّ القمع للوصول إلى التوازن (Shake & Equilibrate)</span>
+            </button>
+
+            <div class="grid grid-cols-2 gap-3 pt-1">
+              <button onclick="prepareTitration('organic')" id="btnSampleOrganic" disabled class="py-2.5 px-3 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 disabled:opacity-40 disabled:pointer-events-none text-amber-600 dark:text-amber-400 border border-amber-500/30 font-bold text-xs transition flex flex-col items-center gap-1">
+                <i class="fa-solid fa-eye-dropper text-base"></i>
+                <span>سحب 5mL من الطبقة العضوية</span>
+              </button>
+              <button onclick="prepareTitration('aqueous')" id="btnSampleAqueous" disabled class="py-2.5 px-3 rounded-xl bg-sky-500/15 hover:bg-sky-500/25 disabled:opacity-40 disabled:pointer-events-none text-sky-600 dark:text-sky-400 border border-sky-500/30 font-bold text-xs transition flex flex-col items-center gap-1">
+                <i class="fa-solid fa-eye-dropper text-base"></i>
+                <span>سحب 5mL من الطبقة المائية</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Left Column: Step 3 (Burette Titration Workbench) -->
+        <div class="lg:col-span-7 bg-white dark:bg-slate-900 rounded-3xl p-5 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between space-y-5">
+          <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+            <h3 class="font-extrabold text-base flex items-center gap-2">
+              <span class="w-6 h-6 rounded-full bg-pink-500 text-white text-xs flex items-center justify-center">2</span>
+              <span>منصة المعايرة الحجمية (<span class="ltr-math">NaOH 0.5 N</span>)</span>
+            </h3>
+            <span id="activeSampleBadge" class="text-xs px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 font-bold">
+              لم يتم سحب عينة بعد
+            </span>
+          </div>
+
+          <!-- Burette & Erlenmeyer Flask Visual Area -->
+          <div class="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center bg-slate-100 dark:bg-slate-950/80 rounded-2xl p-4 border border-slate-200 dark:border-slate-800">
+            
+            <!-- Visual Apparatus -->
+            <div class="sm:col-span-6 flex flex-col items-center justify-center relative h-72">
+              <!-- Burette -->
+              <div class="w-6 h-36 border-2 border-slate-400 dark:border-slate-500 rounded-t-md bg-white/10 relative overflow-hidden flex flex-col justify-end">
+                <div id="buretteLiquid" class="w-full bg-sky-400/50 liquid-transition" style="height: 100%;"></div>
+              </div>
+              <!-- Burette Tap -->
+              <div class="w-8 h-2 bg-slate-500 rounded-full my-0.5"></div>
+              <div class="w-1.5 h-3 bg-slate-400"></div>
+
+              <!-- Falling Drop -->
+              <div id="fallingDrop" class="w-2.5 h-3.5 rounded-full bg-sky-400 opacity-0 pointer-events-none"></div>
+
+              <!-- Conical Flask (Erlenmeyer) -->
+              <div id="titrationFlask" class="mt-6 flex flex-col items-center">
+                <div class="w-8 h-6 border-x-2 border-t-2 border-slate-400 dark:border-slate-500 rounded-t-sm"></div>
+                <div class="w-28 h-20 border-2 border-slate-400 dark:border-slate-500 rounded-b-2xl overflow-hidden flex flex-col justify-end bg-white/5 relative">
+                  <div id="flaskLiquid" class="w-full h-10 bg-sky-200/40 dark:bg-sky-300/20 liquid-transition flex items-center justify-center text-[10px] font-bold text-slate-600 dark:text-slate-300">
+                    5 mL Sample
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Live Digital Readouts & Controls -->
+            <div class="sm:col-span-6 space-y-4">
+              <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-2">
+                <div class="flex justify-between items-center text-xs text-slate-500">
+                  <span>حجم <span class="ltr-math">NaOH</span> المستهلك:</span>
+                  <span class="ltr-math font-bold text-sky-500">N = 0.5 mol/L</span>
+                </div>
+                <div class="text-3xl font-extrabold ltr-math text-center py-1 text-slate-900 dark:text-white" id="buretteReadingDisplay">
+                  0.00 mL
+                </div>
+                <div id="endpointAlert" class="hidden text-xs font-bold text-pink-500 bg-pink-500/10 border border-pink-500/20 rounded-lg p-2 text-center">
+                  <i class="fa-solid fa-wand-magic-sparkles ml-1"></i> تم الوصول إلى نقطة التكافؤ (اللون الوردي الفاتح)!
+                </div>
+              </div>
+
+              <!-- Step-by-step Titration Buttons -->
+              <div class="space-y-2">
+                <button onclick="addIndicator()" id="btnIndicator" disabled class="w-full py-2.5 rounded-xl bg-pink-500/15 hover:bg-pink-500/25 disabled:opacity-40 disabled:pointer-events-none text-pink-600 dark:text-pink-400 border border-pink-500/30 font-bold text-xs transition flex items-center justify-center gap-2">
+                  <i class="fa-solid fa-droplet"></i>
+                  <span>1. إضافة قطرتين من مشعر الفينول فتالين</span>
+                </button>
+
+                <div class="grid grid-cols-3 gap-2">
+                  <button onclick="addTitrationVolume(0.1)" id="btnAdd01" disabled class="py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 disabled:opacity-40 disabled:pointer-events-none text-white font-bold text-xs transition ltr-math">
+                    + 0.1 mL
+                  </button>
+                  <button onclick="addTitrationVolume(0.5)" id="btnAdd05" disabled class="py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 disabled:opacity-40 disabled:pointer-events-none text-white font-bold text-xs transition ltr-math">
+                    + 0.5 mL
+                  </button>
+                  <button onclick="autoTitrate()" id="btnAutoTitrate" disabled class="py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 disabled:pointer-events-none text-white font-bold text-xs transition">
+                    معايرة تلقائية
+                  </button>
+                </div>
+
+                <button onclick="recordResultToTable()" id="btnRecord" disabled class="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 disabled:opacity-40 disabled:pointer-events-none text-slate-950 font-extrabold text-xs transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20">
+                  <i class="fa-solid fa-check-circle"></i>
+                  <span>تسجيل الحجم في جدول الحسابات</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recorded Progress Summary for Current Flask -->
+          <div class="grid grid-cols-2 gap-3 bg-slate-50 dark:bg-slate-800/50 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 text-xs">
+            <div class="flex items-center justify-between">
+              <span class="text-slate-500 dark:text-slate-400">حجم معايرة الطبقة العضوية (<span class="ltr-math">V_O</span>):</span>
+              <span id="summaryVO" class="font-bold ltr-math text-amber-500">غير مسجل</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-slate-500 dark:text-slate-400">حجم معايرة الطبقة المائية (<span class="ltr-math">V_W</span>):</span>
+              <span id="summaryVW" class="font-bold ltr-math text-sky-500">غير مسجل</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==========================================
+         SECTION 3: TABLE & CALCULATIONS (الجدول والحسابات)
+         ========================================== -->
+    <section id="section-table" class="hidden space-y-6">
+      <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm space-y-5">
+        <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-4">
+          <div>
+            <h2 class="text-xl font-extrabold">جدول نتائج المعايرة وحساب معامل التوزع <span class="ltr-math text-sky-500">K<sub>d</sub></span></h2>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              حجم العينة المسحوبة من كل طبقة <span class="ltr-math">V<sub>sample</sub> = 5.0 mL</span> | تركيز <span class="ltr-math">NaOH = 0.5 N</span>
+            </p>
+          </div>
+          <div class="flex items-center gap-2 no-print">
+            <button onclick="fillSampleData()" class="px-4 py-2 rounded-xl bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 text-xs font-bold transition flex items-center gap-1.5">
+              <i class="fa-solid fa-wand-magic-sparkles"></i> تعبئة القيم النموذجية وحساب النتائج
+            </button>
+            <button onclick="window.print()" class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-xs font-bold border border-slate-300 dark:border-slate-700 transition flex items-center gap-1.5">
+              <i class="fa-solid fa-print"></i> طباعة التقرير
+            </button>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm text-right border-collapse">
+            <thead>
+              <tr class="bg-slate-100 dark:bg-slate-800/90 text-slate-700 dark:text-slate-300 text-xs uppercase">
+                <th class="p-3.5 rounded-r-xl">رقم المزيج</th>
+                <th class="p-3.5">حجم <span class="ltr-math">NaOH</span> للطبقة العضوية <span class="ltr-math">V<sub>O</sub> (mL)</span></th>
+                <th class="p-3.5">تركيز الطبقة العضوية <span class="ltr-math">N<sub>O</sub> (N)</span></th>
+                <th class="p-3.5">حجم <span class="ltr-math">NaOH</span> للطبقة المائية <span class="ltr-math">V<sub>W</sub> (mL)</span></th>
+                <th class="p-3.5">تركيز الطبقة المائية <span class="ltr-math">N<sub>W</sub> (N)</span></th>
+                <th class="p-3.5 rounded-l-xl">معامل التوزع <span class="ltr-math">K<sub>d</sub> = N<sub>O</sub> / N<sub>W</sub></span></th>
+              </tr>
+            </thead>
+            <tbody id="resultsTableBody" class="divide-y divide-slate-200 dark:divide-slate-800">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Average Kd Box -->
+        <div class="p-4 rounded-2xl bg-gradient-to-r from-sky-500/10 via-indigo-500/10 to-emerald-500/10 border border-sky-500/30 flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h4 class="font-bold text-sm text-slate-800 dark:text-slate-200">المتوسط الحسابي لمعامل التوزع (<span class="ltr-math">Average K<sub>d</sub></span>)</h4>
+            <p class="text-xs text-slate-500 dark:text-slate-400">نلاحظ ثبات قيمة معامل التوزع في الأمزجة الثلاثة رغم اختلاف التراكيز الابتدائية لحمض الخل.</p>
+          </div>
+          <div class="text-2xl font-extrabold ltr-math text-emerald-600 dark:text-emerald-400" id="avgKdDisplay">
+            K_d = --
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         SECTION 4: QUIZ (اختبر فهمك)
+         ========================================== -->
+    <section id="section-quiz" class="hidden space-y-6">
+      <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
+        <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
+          <div>
+            <h2 class="text-xl font-extrabold">اختبر فهمك — تجربة قانون التوزع</h2>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">أجب عن الأسئلة التالية للتأكد من استيعابك للأساس النظري والعملي للتجربة.</p>
+          </div>
+          <span id="quizScoreBadge" class="px-3.5 py-1.5 rounded-full bg-amber-500/15 text-amber-500 font-bold text-xs">
+            النتيجة: 0 / 3
+          </span>
+        </div>
+
+        <div id="quizContainer" class="space-y-5">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- JavaScript Logic -->
+  <script>
+    // ==========================================
+    // STATE & EXPERIMENTAL DATA
+    // ==========================================
+    let soundEnabled = true;
+    let currentLang = 'ar';
+    let currentFlask = 1;
+    let activeLayer = null; // 'organic' | 'aqueous'
+    let indicatorAdded = false;
+    let currentBuretteVol = 0;
+
+    const N_NAOH = 0.5;
+    const V_SAMPLE = 5.0;
+
+    // Realistic experimental target endpoints (in mL of 0.5N NaOH for 5mL sample)
+    // Kd = NO / NW ≈ 0.78
+    const flasksData = {
+      1: { shaken: false, targetVO: 3.9, targetVW: 5.0, recordedVO: null, recordedVW: null },
+      2: { shaken: false, targetVO: 5.8, targetVW: 7.4, recordedVO: null, recordedVW: null },
+      3: { shaken: false, targetVO: 7.8, targetVW: 10.0, recordedVO: null, recordedVW: null }
+    };
+
+    // ==========================================
+    // SOUND SYNTHESIZER (Web Audio API)
+    // ==========================================
+    function playTone(freq = 500, duration = 0.08, type = 'sine') {
+      if (!soundEnabled) return;
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+        gain.gain.setValueAtTime(0.08, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + duration);
+      } catch (e) {}
+    }
+
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      const icon = document.getElementById('soundIcon');
+      icon.className = soundEnabled ? 'fa-solid fa-volume-high text-sky-500' : 'fa-solid fa-volume-xmark text-slate-400';
+      if (soundEnabled) playTone(660, 0.1);
+    }
+
+    function toggleTheme() {
+      document.documentElement.classList.toggle('dark');
+      playTone(520, 0.08);
+    }
+
+    function toggleLanguage() {
+      currentLang = currentLang === 'ar' ? 'en' : 'ar';
+      document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+      document.getElementById('headerTitle').textContent = currentLang === 'ar'
+        ? 'قانون التوزع — تحديد معامل توزع حمض الخل بين سائلين غير متمازجين'
+        : 'Distribution Law — Partition Coefficient of Acetic Acid (Water / Butanol)';
+      playTone(580, 0.08);
+    }
+
+    // ==========================================
+    // TAB NAVIGATION
+    // ==========================================
+    function switchMainTab(tabName) {
+      const tabs = ['theory', 'lab', 'table', 'quiz'];
+      tabs.forEach(t => {
+        const sec = document.getElementById(`section-${t}`);
+        const btn = document.getElementById(`tabBtn-${t}`);
+        if (t === tabName) {
+          sec.classList.remove('hidden');
+          btn.classList.add('bg-sky-500', 'text-white', 'shadow-md');
+          btn.classList.remove('text-slate-600', 'dark:text-slate-300');
+        } else {
+          sec.classList.add('hidden');
+          btn.classList.remove('bg-sky-500', 'text-white', 'shadow-md');
+          btn.classList.add('text-slate-600', 'dark:text-slate-300');
+        }
+      });
+      if (tabName === 'table') renderTable();
+      playTone(600, 0.07);
+    }
+
+    // ==========================================
+    // VIRTUAL LAB INTERACTIONS
+    // ==========================================
+    function selectFlask(num) {
+      currentFlask = num;
+      [1, 2, 3].forEach(n => {
+        const btn = document.getElementById(`flaskBtn-${n}`);
+        if (n === num) {
+          btn.className = 'px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition bg-sky-500 text-white shadow';
+        } else {
+          btn.className = 'px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200';
+        }
+      });
+      activeLayer = null;
+      indicatorAdded = false;
+      currentBuretteVol = 0;
+      updateLabUI();
+      playTone(480, 0.08);
+    }
+
+    function resetCurrentFlask() {
+      flasksData[currentFlask].shaken = false;
+      flasksData[currentFlask].recordedVO = null;
+      flasksData[currentFlask].recordedVW = null;
+      activeLayer = null;
+      indicatorAdded = false;
+      currentBuretteVol = 0;
+      updateLabUI();
+      playTone(350, 0.12);
+    }
+
+    function shakeFunnel() {
+      const funnel = document.getElementById('funnelContainer');
+      const badge = document.getElementById('funnelStatusBadge');
+      const btnShake = document.getElementById('btnShake');
+
+      btnShake.disabled = true;
+      funnel.classList.add('animate-shake-flask');
+      badge.textContent = 'جاري الرجّ وموازنة الطورين...';
+      badge.className = 'text-xs px-2.5 py-1 rounded-full bg-sky-500/15 text-sky-500 font-bold';
+      playTone(300, 0.2, 'triangle');
+
+      setTimeout(() => {
+        funnel.classList.remove('animate-shake-flask');
+        flasksData[currentFlask].shaken = true;
+        btnShake.disabled = false;
+        playTone(750, 0.15);
+        updateLabUI();
+      }, 1400);
+    }
+
+    function prepareTitration(layer) {
+      activeLayer = layer;
+      indicatorAdded = false;
+      currentBuretteVol = 0;
+      playTone(540, 0.1);
+      updateLabUI();
+    }
+
+    function addIndicator() {
+      if (!activeLayer) return;
+      indicatorAdded = true;
+      playTone(680, 0.1);
+      updateLabUI();
+    }
+
+    function addTitrationVolume(amount) {
+      if (!activeLayer || !indicatorAdded) return;
+      currentBuretteVol = Math.min(25, +(currentBuretteVol + amount).toFixed(2));
+
+      // Trigger falling drop animation
+      const drop = document.getElementById('fallingDrop');
+      drop.classList.remove('animate-drop');
+      void drop.offsetWidth;
+      drop.classList.add('animate-drop');
+
+      playTone(620, 0.06);
+      updateLabUI();
+    }
+
+    function autoTitrate() {
+      if (!activeLayer || !indicatorAdded) return;
+      const target = activeLayer === 'organic'
+        ? flasksData[currentFlask].targetVO
+        : flasksData[currentFlask].targetVW;
+      currentBuretteVol = target;
+      playTone(820, 0.15);
+      updateLabUI();
+    }
+
+    function recordResultToTable() {
+      if (!activeLayer) return;
+      if (activeLayer === 'organic') {
+        flasksData[currentFlask].recordedVO = currentBuretteVol;
+      } else {
+        flasksData[currentFlask].recordedVW = currentBuretteVol;
+      }
+      playTone(880, 0.15);
+      updateLabUI();
+      renderTable();
+    }
+
+    function updateLabUI() {
+      const fData = flasksData[currentFlask];
+      const badge = document.getElementById('funnelStatusBadge');
+      const btnOrg = document.getElementById('btnSampleOrganic');
+      const btnAq = document.getElementById('btnSampleAqueous');
+
+      if (fData.shaken) {
+        badge.textContent = 'تم الفصل عند التوازن — جاهز للسحب';
+        badge.className = 'text-xs px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-500 font-bold';
+        btnOrg.disabled = false;
+        btnAq.disabled = false;
+      } else {
+        badge.textContent = 'بانتظار الرجّ';
+        badge.className = 'text-xs px-2.5 py-1 rounded-full bg-amber-500/15 text-amber-500 font-bold';
+        btnOrg.disabled = true;
+        btnAq.disabled = true;
+      }
+
+      // Active sample badge
+      const sampleBadge = document.getElementById('activeSampleBadge');
+      if (!activeLayer) {
+        sampleBadge.textContent = 'لم يتم سحب عينة بعد';
+        sampleBadge.className = 'text-xs px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 font-bold';
+      } else if (activeLayer === 'organic') {
+        sampleBadge.textContent = `عينة الطبقة العضوية (المزيج ${currentFlask})`;
+        sampleBadge.className = 'text-xs px-3 py-1 rounded-full bg-amber-500/15 text-amber-500 font-bold';
+      } else {
+        sampleBadge.textContent = `عينة الطبقة المائية (المزيج ${currentFlask})`;
+        sampleBadge.className = 'text-xs px-3 py-1 rounded-full bg-sky-500/15 text-sky-500 font-bold';
+      }
+
+      // Enable/disable titration controls
+      document.getElementById('btnIndicator').disabled = !activeLayer || indicatorAdded;
+      document.getElementById('btnAdd01').disabled = !indicatorAdded;
+      document.getElementById('btnAdd05').disabled = !indicatorAdded;
+      document.getElementById('btnAutoTitrate').disabled = !indicatorAdded;
+
+      // Update Burette reading & liquid height
+      document.getElementById('buretteReadingDisplay').textContent = `${currentBuretteVol.toFixed(2)} mL`;
+      const pctRemaining = Math.max(15, 100 - (currentBuretteVol / 15) * 85);
+      document.getElementById('buretteLiquid').style.height = `${pctRemaining}%`;
+
+      // Check Endpoint
+      const target = activeLayer === 'organic' ? fData.targetVO : fData.targetVW;
+      const reachedEndpoint = activeLayer && indicatorAdded && currentBuretteVol >= target;
+      const flaskLiquid = document.getElementById('flaskLiquid');
+      const endpointAlert = document.getElementById('endpointAlert');
+      const btnRecord = document.getElementById('btnRecord');
+
+      if (reachedEndpoint) {
+        flaskLiquid.className = 'w-full h-12 bg-pink-400/70 dark:bg-pink-500/60 liquid-transition flex items-center justify-center text-[10px] font-bold text-white';
+        flaskLiquid.textContent = 'نقطة التكافؤ (وردي)';
+        endpointAlert.classList.remove('hidden');
+        btnRecord.disabled = false;
+      } else {
+        flaskLiquid.className = 'w-full h-10 bg-sky-200/40 dark:bg-sky-300/20 liquid-transition flex items-center justify-center text-[10px] font-bold text-slate-600 dark:text-slate-300';
+        flaskLiquid.textContent = activeLayer ? (indicatorAdded ? 'عينة + فينول فتالين' : '5 mL عينة') : 'فارغ';
+        endpointAlert.classList.add('hidden');
+        btnRecord.disabled = true;
+      }
+
+      // Summary Footer
+      document.getElementById('summaryVO').textContent = fData.recordedVO !== null ? `${fData.recordedVO.toFixed(2)} mL` : 'غير مسجل';
+      document.getElementById('summaryVW').textContent = fData.recordedVW !== null ? `${fData.recordedVW.toFixed(2)} mL` : 'غير مسجل';
+    }
+
+    // ==========================================
+    // TABLE & CALCULATIONS
+    // ==========================================
+    function renderTable() {
+      const tbody = document.getElementById('resultsTableBody');
+      tbody.innerHTML = '';
+      let kdSum = 0;
+      let kdCount = 0;
+
+      [1, 2, 3].forEach(num => {
+        const d = flasksData[num];
+        const vo = d.recordedVO;
+        const vw = d.recordedVW;
+        const no = vo !== null ? (N_NAOH * vo) / V_SAMPLE : null;
+        const nw = vw !== null ? (N_NAOH * vw) / V_SAMPLE : null;
+        const kd = (no !== null && nw !== null && nw > 0) ? (no / nw) : null;
+
+        if (kd !== null) {
+          kdSum += kd;
+          kdCount++;
+        }
+
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50 dark:hover:bg-slate-800/40 transition';
+        tr.innerHTML = `
+          <td class="p-3.5 font-bold">المزيج (${num})</td>
+          <td class="p-3.5 ltr-math">${vo !== null ? vo.toFixed(2) : '<span class="text-slate-400">--</span>'}</td>
+          <td class="p-3.5 ltr-math font-semibold text-amber-500">${no !== null ? no.toFixed(3) : '--'}</td>
+          <td class="p-3.5 ltr-math">${vw !== null ? vw.toFixed(2) : '<span class="text-slate-400">--</span>'}</td>
+          <td class="p-3.5 ltr-math font-semibold text-sky-500">${nw !== null ? nw.toFixed(3) : '--'}</td>
+          <td class="p-3.5 ltr-math font-extrabold text-emerald-500">${kd !== null ? kd.toFixed(3) : '--'}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      const avgDisplay = document.getElementById('avgKdDisplay');
+      avgDisplay.textContent = kdCount > 0 ? `K_d = ${(kdSum / kdCount).toFixed(3)}` : 'K_d = --';
+    }
+
+    function fillSampleData() {
+      [1, 2, 3].forEach(num => {
+        flasksData[num].shaken = true;
+        flasksData[num].recordedVO = flasksData[num].targetVO;
+        flasksData[num].recordedVW = flasksData[num].targetVW;
+      });
+      updateLabUI();
+      renderTable();
+      playTone(780, 0.12);
+    }
+
+    // ==========================================
+    // MOLECULAR CANVAS ANIMATION (THEORY SECTION)
+    // ==========================================
+    let molecules = [];
+    function initMolecularSim() {
+      const canvas = document.getElementById('moleculesCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      canvas.width = 400;
+      canvas.height = 208;
+
+      molecules = Array.from({ length: 34 }, (_, i) => ({
+        x: Math.random() * 380 + 10,
+        y: i < 15 ? Math.random() * 90 + 10 : Math.random() * 90 + 110,
+        vx: (Math.random() - 0.5) * 1.2,
+        vy: (Math.random() - 0.5) * 1.2
+      }));
+
+      function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        molecules.forEach(m => {
+          m.x += m.vx;
+          m.y += m.vy;
+          if (m.x < 8 || m.x > canvas.width - 8) m.vx *= -1;
+          if (m.y < 8 || m.y > canvas.height - 8) m.vy *= -1;
+
+          ctx.beginPath();
+          ctx.arc(m.x, m.y, 4.5, 0, Math.PI * 2);
+          ctx.fillStyle = '#f472b6';
+          ctx.fill();
+        });
+        requestAnimationFrame(animate);
+      }
+      animate();
+    }
+
+    function resetMolecularSim() {
+      molecules.forEach((m, i) => {
+        m.x = Math.random() * 380 + 10;
+        m.y = i < 15 ? Math.random() * 90 + 10 : Math.random() * 90 + 110;
+      });
+      playTone(600, 0.08);
+    }
+
+    // ==========================================
+    // QUIZ LOGIC
+    // ==========================================
+    const quizQuestions = [
+      {
+        q: '1. لماذا تشكل طبقة البوتانول الطبقة العليا بينما يشكل الماء الطبقة السفلى في قمع الفصل؟',
+        options: [
+          'لأن كثافة البوتانول (0.81 g/mL) أقل من كثافة الماء (1.00 g/mL)',
+          'لأن البوتانول يتفاعل كيميائياً مع زجاج القمع',
+          'لأن حمض الخل ينحل في الماء فقط'
+        ],
+        correct: 0
+      },
+      {
+        q: '2. ما هو المشعر المستخدم في معايرة حمض الخل بهيدروكسيد الصوديوم، وما لون نقطة النهاية؟',
+        options: [
+          'الميثيل البرتقالي — يتحول إلى الأصفر',
+          'الفينول فتالين — يتحول من عديم اللون إلى الوردي الفاتح',
+          'النشا — يتحول إلى الأزرق الداكن'
+        ],
+        correct: 1
+      },
+      {
+        q: '3. كيف تتغير قيمة معامل التوزع (Kd) عند زيادة التركيز الابتدائي لحمض الخل في الأمزجة الممددة عند ثبات درجة الحرارة؟',
+        options: [
+          'تزداد قيمة Kd بشكل طردي',
+          'تبقى قيمة Kd ثابتة ضمن حدود الخطأ التجريبي',
+          'تنخفض قيمة Kd إلى الصفر'
+        ],
+        correct: 1
+      }
+    ];
+    let userAnswers = {};
+
+    function renderQuiz() {
+      const container = document.getElementById('quizContainer');
+      container.innerHTML = '';
+      quizQuestions.forEach((item, idx) => {
+        const div = document.createElement('div');
+        div.className = 'p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 space-y-3';
+        const optsHtml = item.options.map((opt, oIdx) => {
+          const picked = userAnswers[idx] === oIdx;
+          const isCorrect = oIdx === item.correct;
+          let btnStyle = 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 hover:border-sky-500';
+          if (userAnswers[idx] !== undefined) {
+            if (isCorrect) btnStyle = 'bg-emerald-500/20 border-emerald-500 text-emerald-600 dark:text-emerald-400 font-bold';
+            else if (picked) btnStyle = 'bg-rose-500/20 border-rose-500 text-rose-500';
+          }
+          return `
+            <button onclick="answerQuiz(${idx}, ${oIdx})" class="w-full text-right p-3 rounded-xl border text-xs sm:text-sm transition flex items-center justify-between ${btnStyle}">
+              <span>${opt}</span>
+              ${userAnswers[idx] !== undefined && isCorrect ? '<i class="fa-solid fa-check text-emerald-500"></i>' : ''}
+            </button>
+          `;
+        }).join('');
+
+        div.innerHTML = `
+          <h4 class="font-bold text-sm sm:text-base">${item.q}</h4>
+          <div class="space-y-2">${optsHtml}</div>
+        `;
+        container.appendChild(div);
+      });
+
+      let score = 0;
+      Object.keys(userAnswers).forEach(k => {
+        if (userAnswers[k] === quizQuestions[k].correct) score++;
+      });
+      document.getElementById('quizScoreBadge').textContent = `النتيجة: ${score} / ${quizQuestions.length}`;
+    }
+
+    function answerQuiz(qIdx, oIdx) {
+      userAnswers[qIdx] = oIdx;
+      playTone(oIdx === quizQuestions[qIdx].correct ? 780 : 320, 0.12);
+      renderQuiz();
+    }
+
+    // Initialize everything on load
+    window.addEventListener('DOMContentLoaded', () => {
+      initMolecularSim();
+      updateLabUI();
+      renderTable();
+      renderQuiz();
+    });
+  </script>
+</body>
+</html>
